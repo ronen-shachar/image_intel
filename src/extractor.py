@@ -1,7 +1,6 @@
 from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
-import os
 
 """
 extractor.py - שליפת EXIF מתמונות
@@ -12,27 +11,52 @@ extractor.py - שליפת EXIF מתמונות
 """
 
 
+def clean_value(val):
+    if isinstance(val, str):
+        return val.strip('\x00').strip()
+    return val
+
+
+def dms_to_decimal(dms_tuple, ref):
+    degrees = dms_tuple[0][0] / dms_tuple[0][1]
+    minutes = dms_tuple[1][0] / dms_tuple[1][1]
+    seconds = dms_tuple[2][0] / dms_tuple[2][1]
+    decimal = degrees + minutes / 60 + seconds / 3600
+    if ref in [b'S', b'W', 'S', 'W']:
+        decimal = -decimal
+    return decimal
+
+
 def has_gps(data: dict):
-    pass
+    return "GPSInfo" in data
 
 
 def latitude(data: dict):
-    pass
+    gps_info = data.get("GPSInfo")
+    if gps_info and 2 in gps_info:
+        return dms_to_decimal(gps_info[2], gps_info.get(1))
+    return None
+
 
 
 def longitude(data: dict):
-    pass
+    gps_info = data.get("GPSInfo")
+    if gps_info and 4 in gps_info:
+        return dms_to_decimal(gps_info[4], gps_info.get(3))
+    return None
 
 def datatime(data: dict):
-    pass
+    dt = data.get("DateTimeOriginal") or data.get("DateTime")
+    return str(dt) if dt else None
+
 
 
 def camera_make(data: dict):
-    pass
+    return data.get("Make")
 
 
 def camera_model(data: dict):
-    pass
+    return data.get("Model")
 
 
 def extract_metadata(image_path):
@@ -51,7 +75,7 @@ def extract_metadata(image_path):
     # תיקון: טיפול בתמונה בלי EXIF - בלי זה, exif.items() נופל עם AttributeError
     try:
         img = Image.open(image_path)
-        exif = img._getexif()
+        exif = img.getexif()
     except Exception:
         exif = None
 
@@ -75,11 +99,11 @@ def extract_metadata(image_path):
 
     exif_dict = {
         "filename": path.name,
-        "datetime": datatime(data),
+        "datetime": clean_value(datatime(data)),
         "latitude": latitude(data),
         "longitude": longitude(data),
-        "camera_make": camera_make(data),
-        "camera_model": camera_model(data),
+        "camera_make": clean_value(camera_make(data)),
+        "camera_model": clean_value(camera_model(data)),
         "has_gps": has_gps(data)
     }
     return exif_dict
@@ -95,4 +119,17 @@ def extract_all(folder_path):
     Returns:
         list של dicts (כמו extract_metadata)
     """
-    pass
+    results = []
+    base_path = Path(folder_path)
+    supported_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.tiff', '.bmp'}
+    if not base_path.is_dir():
+        return results
+    for file_path in base_path.iterdir():
+        if file_path.is_file() and file_path.suffix.lower() in supported_extensions:
+            try:
+                metadata = extract_metadata(str(file_path))
+                results.append(metadata)
+            except Exception:
+                continue
+    return results
+
