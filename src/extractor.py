@@ -23,16 +23,16 @@ def latitude(data: dict):
 def longitude(data: dict):
     pass
 
-def datatime(data: dict):
-    pass
+def datetime(data: dict):
+    return data.get('DateTime',None)
 
 
 def camera_make(data: dict):
-    pass
+    return data.get('Make','').strip('\x00') or None
 
 
 def camera_model(data: dict):
-    pass
+    return data.get('Model','').strip('\x00') or None
 
 
 def extract_metadata(image_path):
@@ -70,7 +70,6 @@ def extract_metadata(image_path):
     for tag_id, value in exif.items():
         tag = TAGS.get(tag_id, tag_id)
         data[tag] = value
-
     # תיקון: הוסר print(data) שהיה כאן - הדפיס את כל ה-EXIF הגולמי על כל תמונה
 
     exif_dict = {
@@ -102,3 +101,4 @@ def extract_all(folder_path):
     if len(data_list) == 0:
         return 'no images in folder'
     return data_list
+print(extract_all(r"C:\Users\Zisel Segal\PyCharmMiscProject\image_intel\images\ready"))
