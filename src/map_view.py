@@ -21,15 +21,13 @@ def sort_by_time(arr):
 
 
 def extract_center_of_map(list_location: list[dict]) -> list:
-    # Create a list of coords
-    valid_coords = [[loc["latitude"], loc["longitude"]] for loc in list_location if loc.get("has_gps")]
 
-    if not valid_coords:
+    if not list_location:
         return [32.0853, 34.7818] # For example returns -  Tel Aviv
 
-    count = len(valid_coords)
-    latitude_avg = sum(coord[0] for coord in valid_coords) / count
-    longitude_avg = sum(coord[1] for coord in valid_coords) / count
+    count = len(list_location)
+    latitude_avg = sum(coord[0] for coord in list_location) / count
+    longitude_avg = sum(coord[1] for coord in list_location) / count
 
     return [latitude_avg, longitude_avg]
 
@@ -49,9 +47,29 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    center_map = extract_center_of_map(images_data)
-    m = folium.Map(location=center_map, zoom_start=10)
+    sorted_data = sort_by_time(images_data)
+    valid_coords = [[loc["latitude"], loc["longitude"]] for loc in sorted_data if loc.get("has_gps")]
+    center_map = extract_center_of_map(valid_coords)
+    m = folium.Map(location=center_map, zoom_start=11)
 
+    folium.PolyLine(
+        locations=valid_coords, color="blue", weight=3, opacity=1
+    ).add_to(m)
+
+    for loc in images_data:
+        if loc["has_gps"]:
+            filename = loc["filename"]
+            datetime = loc["datetime"]
+            camera_make = loc["camera_make"]
+            icon_color = get_device_color(camera_make)
+            details = f"{filename=} - {datetime=} - {camera_make=}"
+
+            folium.Marker([loc["latitude"], loc["longitude"]],
+                          popup=details,
+                          icon=folium.Icon(color=icon_color)
+                          ).add_to(m)
+
+    return m._repr_html_()
 
 
 
