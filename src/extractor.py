@@ -2,7 +2,6 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
 import os
-from pathlib import Path
 
 """
 extractor.py - שליפת EXIF מתמונות
