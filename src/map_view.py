@@ -33,6 +33,12 @@ def extract_center_of_map(list_location: list[dict]) -> list:
 
     return [latitude_avg, longitude_avg]
 
+def get_device_color(device_name):
+    # returns a color for device
+    colors = {'Samsung': 'blue', 'Apple': 'red', 'iPhone': 'red', 'Google': 'green', 'Xiaomi': 'orange'}
+    brand = device_name.strip() if device_name else "Unknown"
+    return colors.get(brand, 'gray')
+
 def create_map(images_data):
     """
     יוצר מפה אינטראקטיבית עם כל המיקומים.
