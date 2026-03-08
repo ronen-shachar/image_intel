@@ -17,7 +17,8 @@ import folium
 
 
 def sort_by_time(arr):
-    pass
+    sorted_arr = sorted(arr, key=lambda x: x["datetime"])
+    return sorted_arr
 
 
 def create_map(images_data):
@@ -31,7 +32,6 @@ def create_map(images_data):
         string של HTML (המפה)
     """
     pass
-
 
 
 if __name__ == "__main__":
