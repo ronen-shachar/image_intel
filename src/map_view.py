@@ -20,6 +20,19 @@ def sort_by_time(arr):
     pass
 
 
+def extract_center_of_map(list_location: list[dict]) -> list:
+    # Create a list of coords
+    valid_coords = [[loc["latitude"], loc["longitude"]] for loc in list_location if loc.get("has_gps")]
+
+    if not valid_coords:
+        return [32.0853, 34.7818] # For example returns -  Tel Aviv
+
+    count = len(valid_coords)
+    latitude_avg = sum(coord[0] for coord in valid_coords) / count
+    longitude_avg = sum(coord[1] for coord in valid_coords) / count
+
+    return [latitude_avg, longitude_avg]
+
 def create_map(images_data):
     """
     יוצר מפה אינטראקטיבית עם כל המיקומים.
@@ -30,7 +43,9 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    pass
+    center_map = extract_center_of_map(images_data)
+    m = folium.Map(location=center_map, zoom_start=10)
+
 
 
 
