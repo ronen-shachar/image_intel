@@ -20,6 +20,23 @@ def sort_by_time(arr):
     pass
 
 
+def extract_center_of_map(list_location: list[dict]) -> list:
+
+    if not list_location:
+        return [32.0853, 34.7818] # For example returns -  Tel Aviv
+
+    count = len(list_location)
+    latitude_avg = sum(coord[0] for coord in list_location) / count
+    longitude_avg = sum(coord[1] for coord in list_location) / count
+
+    return [latitude_avg, longitude_avg]
+
+def get_device_color(device_name):
+    # returns a color for device
+    colors = {'Samsung': 'blue', 'Apple': 'red', 'iPhone': 'red', 'Google': 'green', 'Xiaomi': 'orange'}
+    brand = device_name.strip() if device_name else "Unknown"
+    return colors.get(brand, 'gray')
+
 def create_map(images_data):
     """
     יוצר מפה אינטראקטיבית עם כל המיקומים.
@@ -30,7 +47,29 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    pass
+    sorted_data = sort_by_time(images_data)
+    valid_coords = [[loc["latitude"], loc["longitude"]] for loc in sorted_data if loc.get("has_gps")]
+    center_map = extract_center_of_map(valid_coords)
+    m = folium.Map(location=center_map, zoom_start=11)
+
+    folium.PolyLine(
+        locations=valid_coords, color="blue", weight=3, opacity=1
+    ).add_to(m)
+
+    for loc in images_data:
+        if loc["has_gps"]:
+            filename = loc["filename"]
+            datetime = loc["datetime"]
+            camera_make = loc["camera_make"]
+            icon_color = get_device_color(camera_make)
+            details = f"{filename=} - {datetime=} - {camera_make=}"
+
+            folium.Marker([loc["latitude"], loc["longitude"]],
+                          popup=details,
+                          icon=folium.Icon(color=icon_color)
+                          ).add_to(m)
+
+    return m._repr_html_()
 
 
 
