@@ -123,3 +123,5 @@ def extract_all(folder_path):
 a = extract_all(r'C:\Users\sendi\Desktop\New folder (4)\image_intel\images\sample_data')
 for i in a :
     print(i)
+
+""""""
