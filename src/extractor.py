@@ -13,26 +13,45 @@ extractor.py - שליפת EXIF מתמונות
 
 
 def has_gps(data: dict):
-    pass
+    for i in data.keys():
+        if i == 'GPSInfo':
+            return True
+    return False
 
 
 def latitude(data: dict):
-    pass
-
+    try:
+        north = data['GPSInfo'][2]
+        return float(north[0] + (north[1]/60) + (north[2]/3600))
+    except:
+        return None
 
 def longitude(data: dict):
-    pass
+    try:
+        east = data['GPSInfo'][4]
+        return float(east[0] + (east[1] / 60) + (east[2] / 3600))
+    except:
+        return None
 
 def datatime(data: dict):
-    pass
+    try:
+        return data['DateTimeOriginal']
+    except:
+        return None
 
 
 def camera_make(data: dict):
-    pass
+    try:
+        return data['Make']
+    except:
+        return None
 
 
 def camera_model(data: dict):
-    pass
+    try:
+        return data['Model']
+    except:
+        return None
 
 
 def extract_metadata(image_path):
@@ -95,4 +114,12 @@ def extract_all(folder_path):
     Returns:
         list של dicts (כמו extract_metadata)
     """
-    pass
+    all_exif_list = []
+    python_files = list(Path(folder_path).glob('*.jpg'))
+    for file in python_files:
+        all_exif_list.append(extract_metadata(file))
+    return all_exif_list
+
+a = extract_all(r'C:\Users\sendi\Desktop\New folder (4)\image_intel\images\sample_data')
+for i in a :
+    print(i)
