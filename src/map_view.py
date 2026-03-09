@@ -14,10 +14,12 @@ map_view.py - יצירת מפה אינטראקטיבית
 """
 
 import folium
-
+from datetime import datetime
 
 def sort_by_time(arr):
-    pass
+    return sorted(arr,key=lambda x:datetime.strptime(x["datetime"],"%Y-%m-%d %H:%M:%S"))
+
+
 
 
 def create_map(images_data):
