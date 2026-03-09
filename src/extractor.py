@@ -12,31 +12,16 @@ extractor.py - שליפת EXIF מתמונות
 """
 
 def has_gps(data: dict):
-    """
-    בודק האם קיים מידע GPS במילון הנתונים.
-    """
-    # בודקים אם קיים המפתח GPSInfo ואם הוא מכיל נתונים
     return data.get("latitude") is not None and data.get("longitude") is not None
 
 def latitude(data: dict):
-    """
-    מחזיר את קו הרוחב רק אם קיים GPS, אחרת מחזיר None.
-    """
-    # תנאי: מציגים רק אם has_gps הוא True
     if not has_gps(data):
         return None
-    
-    # שליפת הערך (בהנחה והוא כבר הומר או נמצא במפתח המתאים)
     return data.get("latitude")
 
 def longitude(data: dict):
-    """
-    מחזיר את קו האורך רק אם קיים GPS, אחרת מחזיר None.
-    """
-    # החזרת None אם המידע לא קיים
     if not has_gps(data):
-        return None
-        
+        return None        
     return data.get("longitude")
 
 def datatime(data: dict):
