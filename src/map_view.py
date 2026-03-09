@@ -15,9 +15,11 @@ def sort_by_time(arr):
 
 # פונקציה ליצירת מפה
 def create_map(images_data):
-    gps_images = [img for img in images_data if img["has_gps"]]
-
-    if not gps_images:
+    try:
+        gps_images = [img for img in images_data if img["has_gps"]]
+    except KeyError:
+        return None
+    if not gps_images: # לכאורה אם הרשימה ריקה אז שורה 19 לא תעבוד ולכן זוג A הוסיף שם try ןexcept
         return "<h2>No GPS data found</h2>"
 
     # מתחיל את המפה באמצע
@@ -25,8 +27,13 @@ def create_map(images_data):
     center_lon = sum(img["longitude"] for img in gps_images) / len(gps_images)
 
     # יוצר איבר מפה
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=1)
-
+    m = folium.Map(
+        location=[center_lat, center_lon],
+        zoom_start=8,
+        dragging=True,
+        scrollWheelZoom=True,
+        tap=True
+    )
     # מחלק צבעים לפי חברות
     pin_color = ['blue', 'lightgreen', 'lightblue', 'orange', 'darkred',
                  'lightred', 'beige', 'pink', 'darkgreen', 'cadetblue',
@@ -65,7 +72,6 @@ def create_map(images_data):
             popup=popup,
             icon=custom_icon
         ).add_to(m)
-
     # בונה את הקו
     path_coordinates = [[img["latitude"], img["longitude"]] for img in gps_images]
     folium.PolyLine(path_coordinates, color="black", weight=3, opacity=10).add_to(m)
