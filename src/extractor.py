@@ -18,7 +18,6 @@ def has_gps(data: dict):
             return True
     return False
 
-
 def latitude(data: dict):
     try:
         north = data['GPSInfo'][2]
@@ -35,7 +34,7 @@ def longitude(data: dict):
 
 def datatime(data: dict):
     try:
-        return data['DateTimeOriginal']
+        return data['DateTimeOriginal'].replace(':',"-",2)
     except:
         return None
 
@@ -121,7 +120,7 @@ def extract_all(folder_path):
         all_exif_list.append(extract_metadata(file))
     return all_exif_list
 
-a = extract_all(r'C:\Users\sendi\Desktop\New folder (4)\image_intel\images\sample_data')
+a = extract_all(r'C:\PythonProjectFinish\image_intel\images\ready')
 for i in a :
     print(i)
 
