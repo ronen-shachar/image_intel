@@ -55,7 +55,7 @@ def camera_model(data: dict):
 
 def extract_metadata(image_path):
     """
-    שולף EXIF מתמונה בודדת.
+    שולף EXIF מתמונה בודדת..
 
     Args:
         image_path: נתיב לקובץ תמונה
