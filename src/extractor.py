@@ -11,17 +11,18 @@ extractor.py - שליפת EXIF מתמונות
 
 """
 
-
 def has_gps(data: dict):
-    pass
-
+    return data.get("latitude") is not None and data.get("longitude") is not None
 
 def latitude(data: dict):
-    pass
-
+    if not has_gps(data):
+        return None
+    return data.get("latitude")
 
 def longitude(data: dict):
-    pass
+    if not has_gps(data):
+        return None        
+    return data.get("longitude")
 
 def datatime(data: dict):
     pass
