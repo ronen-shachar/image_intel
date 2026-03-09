@@ -1,38 +1,31 @@
 from PIL import Image
-from PIL.ExifTags import TAGS
+from PIL.ExifTags import TAGS, GPSTAGS
 from pathlib import Path
 import os
 
-"""
-extractor.py - שליפת EXIF מתמונות
-צוות 1, זוג A
-
-ראו docs/api_contract.md לפורמט המדויק של הפלט.
-
-"""
-
-
 def has_gps(data: dict):
-    pass
-
+    return data.get("latitude") is not None and data.get("longitude") is not None
 
 def latitude(data: dict):
-    pass
-
+    if not has_gps(data):
+        return None
+    return data.get("latitude")
 
 def longitude(data: dict):
-    pass
+    if not has_gps(data):
+        return None        
+    return data.get("longitude")
 
 def datatime(data: dict):
-    pass
+    return data.get('DateTimeOriginal') or data.get('DateTime')
 
 
 def camera_make(data: dict):
-    pass
+    return data.get('Make','').strip('\x00') or None
 
 
 def camera_model(data: dict):
-    pass
+    return data.get('Model','').strip('\x00') or None
 
 
 def dms_to_decimal(dms, ref):
@@ -84,6 +77,7 @@ def extract_metadata(image_path):
     
     data["latitude"] = dms_to_decimal(data.get("GPSLatitude"), data.get("GPSLatitudeRef"))
     data["longitude"] = dms_to_decimal(data.get("GPSLongitude"), data.get("GPSLongitudeRef"))
+
 
     exif_dict = {
         "filename": path.name,
