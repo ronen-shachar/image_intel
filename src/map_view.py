@@ -17,7 +17,8 @@ import folium
 
 
 def sort_by_time(arr):
-    pass
+    arr.sort(key=lambda x: x.get('datetime') or "")
+    return arr
 
 
 def create_map(images_data):
