@@ -33,19 +33,27 @@ def create_timeline(images_data_list):
     # 2. יצירת תוכן הכרטיסים בעזרת לולאה
     cards_html = ""
     for image in images_data_list:
-        cards_html += f"""
-            <div class="event-card">
-                <div style="color: #007bff; font-weight: bold;">{image['datetime']}</div>
-                <div style="margin: 10px 0;">
-                    <strong>Device:</strong> {image['camera_make']} {image['camera_model']}<br>
-                    <strong>Location:</strong> {image['latitude']:.4f}, {image['longitude']:.4f}
-                </div>
-                <a href="https://www.google.com/maps?q={image['latitude']},{image['longitude']}" target="_blank" class="map-btn">
-                    Open Map
-                </a>
-            </div>
-        """
+        if image.get('datetime'):
+            # פתיחת הכרטיס והכנסת פרטי מכשיר (תמיד קורה)
+            cards_html += f"""
+    <div class="event-card">
+    <div style="color: #007bff; font-weight: bold;">{image['datetime']}</div>
+    <div style="margin: 10px 0;">
+    <strong>Device:</strong> {image['camera_make']} {image['camera_model']}<br>"""
 
-    html_end = "</div></div>"
+            # הוספת מיקום רק אם קיים
+            if image.get("latitude"):
+                cards_html += f"""
+    <strong>Location:</strong> {image['latitude']:.4f}, {image['longitude']:.4f}
+    </div>
+    <a href="https://www.google.com/maps?q={image['latitude']},{image['longitude']}" target="_blank" class="map-btn">
+    Open Map
+    </a>"""
+            else:
+                # אם אין מיקום, רק נסגור את הדיב של הטקסט
+                cards_html += "</div>"
 
-    return html_start + cards_html + html_end
+            # סגירה סופית של ה-event-card
+            cards_html += "</div>"
+
+    return html_start + cards_html
