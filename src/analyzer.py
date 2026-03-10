@@ -52,7 +52,7 @@ def detect_camera_switches(images_data):
 
 
 def image_location(list_of_images):
-    name_with_location={img["filename"]:(float(img["latitude"]),float(img["longitude"])) for img in list_of_images}
+    name_with_location = {img["filename"]: (float(img["latitude"]), float(img["longitude"])) for img in list_of_images}
     return name_with_location
 
 
@@ -73,10 +73,10 @@ def back_to_location(name_with_location):
 
 def is_within_1km(image_loc):
     list_within_1km = []
-    for k,v in image_loc.items():
+    for k, v in image_loc.items():
         location = v
         tamp_list = [location]
-        for key,value in image_loc.items():
+        for key, value in image_loc.items():
             location1 = value
             if key == k:
                 continue
@@ -84,23 +84,20 @@ def is_within_1km(image_loc):
             if distance <= 1:
                 tamp_list.append(location1)
         if len(tamp_list) > 1:
-            sorted_list=sorted(tamp_list)
+            sorted_list = sorted(tamp_list)
             if sorted_list not in list_within_1km:
                 list_within_1km.append(sorted_list)
     return list_within_1km
 
 
-
-
-
-#מקבל מ is_within_1km
-def get_city_name(location_list:list):
-    city_list=[]
+# מקבל מ is_within_1km
+def get_city_name(location_list: list):
+    city_list = []
     for i in location_list:
-        loc=i[1]
-        lat,lon=loc[0],loc[1]
+        loc = i[1]
+        lat, lon = loc[0], loc[1]
 
-        #צריך שם של משתמש
+        # צריך שם של משתמש
         geolocator = Nominatim(user_agent="my_image_intel_app")
         location = geolocator.reverse((lat, lon), language='he')
 
@@ -113,12 +110,37 @@ def get_city_name(location_list:list):
     return city_list
 
 
-
-
 def total_analyzer(list_of_dicts):
-    final_dict={"total_images":total_images(list_of_dicts),
-    "images_with_gps": gps_count(list_of_dicts),
-    "images_with_datetime": images_with_datetime(list_of_dicts),
-    "unique_cameras": unique_cameras(list_of_dicts),
-    "date_range": date_range(list_of_dicts),
-    "insights": }
+    final_dict = {"total_images": total_images(list_of_dicts),
+                  "images_with_gps": gps_count(list_of_dicts),
+                  "images_with_datetime": images_with_datetime(list_of_dicts),
+                  "unique_cameras": unique_cameras(list_of_dicts),
+                  "date_range": date_range(list_of_dicts),
+                  "insights": []}
+    cameras_count = len(unique_cameras(list_of_dicts))
+    if len(unique_cameras(list_of_dicts)) > 1:
+        final_dict["insights"].append(f"נמצאו ({cameras_count}) מכשירים שונים - ייתכן שהסוכן החליף מכשירים")
+        switch_devices = detect_camera_switches(list_of_dicts)
+        if len(switch_devices) > 1:
+            date = switch_devices[0]["date"]
+            from1 = switch_devices[0]["from"]
+            to = switch_devices[0]["to"]
+            c_date = f"{date[8:10]}/{date[5:7]}"
+            msg = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
+            final_dict["insights"].append(msg)
+        else:
+            tamp_list = []
+            for i in switch_devices:
+                date = i[0]["date"]
+                from1 = i[0]["from"]
+                to = i[0]["to"]
+                c_date = f"{date[8:10]}/{date[5:7]}"
+                msg1 = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
+                tamp_list.append(msg1 + "\n")
+            final_dict["insights"].append(tamp_list)
+    locations_results = back_to_location(list_of_dicts)
+    if locations_results:
+        for item in locations_results:
+            for cords, count in item.items():
+                msg = f"הסוכן צילם באותו מקום {cords} {count} פעמים"
+                final_dict["insights"].append(msg)
