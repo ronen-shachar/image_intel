@@ -33,9 +33,9 @@ def unique_cameras(list_of_images):
     return final_list
 
 
-def detect_camera_switches(images_data):
+def detect_camera_switches(list_of_images):
     sorted_images = sorted(
-        [img for img in images_data if img["datetime"]],
+        [img for img in list_of_images if img["datetime"]],
         key=lambda x: x["datetime"]
     )
     switches = []
@@ -52,10 +52,10 @@ def detect_camera_switches(images_data):
 
 
 def image_location(list_of_images):
-    name_with_location={img["filename"]:(float(img["latitude"]),float(img["longitude"])) for img in list_of_images}
+    name_with_location={img["filename"]:(float(img["latitude"]),float(img["longitude"])) for img in list_of_images if img["filename"] and img["longitude"]}
     return name_with_location
 
-
+#מקבל מ image_location
 def back_to_location(name_with_location):
     list_of_locations = []
     for k, v in name_with_location.items():
@@ -70,7 +70,7 @@ def back_to_location(name_with_location):
                 list_of_locations.append(tamp_loc)
     return list_of_locations
 
-
+#מקבל מ image_location
 def is_within_1km(image_loc):
     list_within_1km = []
     for k,v in image_loc.items():
@@ -121,4 +121,4 @@ def total_analyzer(list_of_dicts):
     "images_with_datetime": images_with_datetime(list_of_dicts),
     "unique_cameras": unique_cameras(list_of_dicts),
     "date_range": date_range(list_of_dicts),
-    "insights": }
+    "insights":[]}
