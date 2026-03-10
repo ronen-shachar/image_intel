@@ -1,3 +1,7 @@
+from geopy.distance import geodesic
+from geopy.geocoders import Nominatim
+
+
 def total_images(list_of_images):
     return len(list_of_images)
 
@@ -45,3 +49,76 @@ def detect_camera_switches(images_data):
                 "to": curr_cam
             })
     return switches
+
+
+def image_location(list_of_images):
+    name_with_location={img["filename"]:(float(img["latitude"]),float(img["longitude"])) for img in list_of_images}
+    return name_with_location
+
+
+def back_to_location(name_with_location):
+    list_of_locations = []
+    for k, v in name_with_location.items():
+        location = v
+        tamp_loc = {v: 1}
+        for k_1, v_1 in name_with_location.items():
+            location_1 = v_1
+            if location == location_1 and k != k_1:
+                tamp_loc[v] += 1
+        if tamp_loc[v] > 1:
+            if tamp_loc not in list_of_locations:
+                list_of_locations.append(tamp_loc)
+    return list_of_locations
+
+
+def is_within_1km(image_loc):
+    list_within_1km = []
+    for k,v in image_loc.items():
+        location = v
+        tamp_list = [location]
+        for key,value in image_loc.items():
+            location1 = value
+            if key == k:
+                continue
+            distance = geodesic(location, location1).kilometers
+            if distance <= 1:
+                tamp_list.append(location1)
+        if len(tamp_list) > 1:
+            sorted_list=sorted(tamp_list)
+            if sorted_list not in list_within_1km:
+                list_within_1km.append(sorted_list)
+    return list_within_1km
+
+
+
+
+
+#מקבל מ is_within_1km
+def get_city_name(location_list:list):
+    city_list=[]
+    for i in location_list:
+        loc=i[1]
+        lat,lon=loc[0],loc[1]
+
+        #צריך שם של משתמש
+        geolocator = Nominatim(user_agent="my_image_intel_app")
+        location = geolocator.reverse((lat, lon), language='he')
+
+        if location and 'address' in location.raw:
+            address = location.raw['address']
+            city = address.get('city') or address.get('town') or address.get('village')
+            city_list.append(f"ב {city} צולמו {len(i):,} תמונות")
+        else:
+            return "unknown"
+    return city_list
+
+
+
+
+def total_analyzer(list_of_dicts):
+    final_dict={"total_images":total_images(list_of_dicts),
+    "images_with_gps": gps_count(list_of_dicts),
+    "images_with_datetime": images_with_datetime(list_of_dicts),
+    "unique_cameras": unique_cameras(list_of_dicts),
+    "date_range": date_range(list_of_dicts),
+    "insights": }
