@@ -2,6 +2,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
 import os
+from geopy.geocoders import Nominatim
 
 """
 extractor.py - שליפת EXIF מתמונות
@@ -13,31 +14,67 @@ extractor.py - שליפת EXIF מתמונות
 
 
 def has_gps(data: dict):
-    pass
-
+    for i in data.keys():
+        if i == 'GPSInfo':
+            return True
+    return False
 
 def latitude(data: dict):
-    pass
-
+    try:
+        north = data['GPSInfo'][2]
+        return float(north[0] + (north[1]/60) + (north[2]/3600))
+    except:
+        return None
 
 def longitude(data: dict):
-    pass
+    try:
+        east = data['GPSInfo'][4]
+        return float(east[0] + (east[1] / 60) + (east[2] / 3600))
+    except:
+        return None
 
 def datatime(data: dict):
-    pass
+    try:
+        return data['DateTimeOriginal'].replace(':',"-",2)
+    except:
+        return None
 
 
 def camera_make(data: dict):
-    pass
+    try:
+        return data['Make']
+    except:
+        return None
 
 
 def camera_model(data: dict):
-    pass
+    try:
+        return data['Model']
+    except:
+        return None
 
+def location(data: dict):
+    try:
+        lat = latitude(data)
+        lon = longitude(data)
+
+        if lat is None or lon is None:
+            return None
+
+        geolocator = Nominatim(user_agent="image_intel")
+        my_location = geolocator.reverse((lat, lon))
+
+        if my_location is None:
+            return None
+
+        return my_location.address
+
+    except Exception:
+        return None
 
 def extract_metadata(image_path):
     """
-    שולף EXIF מתמונה בודדת.
+    שולף EXIF מתמונה בודדת..
 
     Args:
         image_path: נתיב לקובץ תמונה
@@ -45,6 +82,7 @@ def extract_metadata(image_path):
     Returns:
         dict עם: filename, datetime, latitude, longitude,
               camera_make, camera_model, has_gps
+              .........
     """
     path = Path(image_path)
 
@@ -63,7 +101,8 @@ def extract_metadata(image_path):
             "longitude": None,
             "camera_make": None,
             "camera_model": None,
-            "has_gps": False
+            "has_gps": False,
+            "location": None
         }
 
     data = {}
@@ -80,7 +119,8 @@ def extract_metadata(image_path):
         "longitude": longitude(data),
         "camera_make": camera_make(data),
         "camera_model": camera_model(data),
-        "has_gps": has_gps(data)
+        "has_gps": has_gps(data),
+        "location" : location(data)
     }
     return exif_dict
 
@@ -95,4 +135,16 @@ def extract_all(folder_path):
     Returns:
         list של dicts (כמו extract_metadata)
     """
-    pass
+    all_exif_list = []
+    python_files = list(Path(folder_path).glob('*.jpg'))
+    for file in python_files:
+        all_exif_list.append(extract_metadata(file))
+    return all_exif_list
+
+# BASE_DIR = Path(__file__).resolve().parent.parent
+# images_path = BASE_DIR / "images" / "ready"
+#
+# a = extract_all(str(images_path))
+#
+# for i in a:
+#     print(i)

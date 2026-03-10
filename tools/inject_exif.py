@@ -53,8 +53,7 @@ SCENARIO = {
         },
         {
             "filename_prefix": "IMG_005",
-            "gps_lat": 31.7780,
-            "gps_lon": 35.2354,
+
             "location_name": "ירושלים - הר הזיתים",
             "datetime": "2025:01:13 12:30:00",
             "camera_make": "Apple",
