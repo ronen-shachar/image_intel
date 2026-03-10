@@ -30,7 +30,50 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    pass
+    gps_images = [img for img in images_data if img["has_gps"]]
+
+    if not gps_images:
+        return "<h2>No GPS data found</h2>"
+
+    center_lat = sum(img["latitude"] for img in gps_images) / len(gps_images)
+    center_lon = sum(img["longitude"] for img in gps_images) / len(gps_images)
+
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=8)
+
+    # צבעים לפי מכשיר
+    device_colors = {
+        "Samsung": "blue",
+        "Apple": "red",
+        "Xiaomi": "orange",
+        "Huawei": "green",
+        "Google": "purple",
+        "OnePlus": "pink",
+        "Sony": "darkred",
+        "Oppo": "cadetblue"
+    }
+
+    # נקודות לקו
+    line_points = []
+
+    for img in gps_images:
+        color = device_colors.get(img["camera_make"], "gray")
+
+        folium.Marker(
+            location=[img["latitude"], img["longitude"]],
+            popup=f"{img['filename']}<br>{img['datetime']}<br>{img['camera_model']}",
+            icon=folium.Icon(color=color)
+        ).add_to(m)
+
+    # סדר כרונולוגי
+    sorted_images = sort_by_time(gps_images)
+
+    for img in sorted_images:
+        line_points.append([img["latitude"], img["longitude"]])
+
+    # קו שמחבר את הנקודות
+    folium.PolyLine(line_points, color="purple").add_to(m)
+
+    return m._repr_html_()
 
 
 
