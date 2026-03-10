@@ -17,7 +17,6 @@ import folium
 
 
 def sort_by_time(arr):
-    """ממיין את התמונות לפי זמן צילום (כרונולוגי)"""
     arr.sort(key=lambda x: x.get('datetime') or "")
     return arr
 
