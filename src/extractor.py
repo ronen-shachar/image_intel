@@ -120,7 +120,10 @@ def extract_all(folder_path):
         all_exif_list.append(extract_metadata(file))
     return all_exif_list
 
-a = extract_all(r'C:\PythonProjectFinish\image_intel\images\ready')
-for i in a :
-    print(i)
+BASE_DIR = Path(__file__).resolve().parent.parent
+images_path = BASE_DIR / "images" / "ready"
 
+a = extract_all(str(images_path))
+
+for i in a:
+    print(i)
