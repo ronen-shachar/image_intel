@@ -25,7 +25,13 @@ def create_map(images_data):
     center_lon = sum(img["longitude"] for img in gps_images) / len(gps_images)
 
     # יוצר איבר מפה
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=1)
+    m = folium.Map(
+        location=[center_lat, center_lon],
+        zoom_start=8,
+        dragging=True,
+        scrollWheelZoom=True,
+        tap=True
+    )
 
     # מחלק צבעים לפי חברות
     pin_color = ['blue', 'lightgreen', 'lightblue', 'orange', 'darkred',
