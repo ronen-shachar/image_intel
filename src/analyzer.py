@@ -2,11 +2,13 @@ from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 from datetime import datetime, timedelta
 
-#סך תמונות
+
+# סך תמונות
 def total_images(list_of_images):
     return len(list_of_images)
 
-#סך תמונות עם gps
+
+# סך תמונות עם gps
 def gps_count(list_of_images):
     return sum(i["has_gps"] for i in list_of_images)
 
@@ -18,12 +20,14 @@ def images_with_datetime(list_of_images):
             count += 1
     return count
 
-#טווח
+
+# טווח
 def date_range(list_of_images):
     sorted_list = sorted(list_of_images, key=lambda x: x["datetime"])
     return {"start": sorted_list[0]["datetime"], "end": sorted_list[-1]["datetime"]}
 
-#מכשירים שונים
+
+# מכשירים שונים
 def unique_cameras(list_of_images):
     unique_list = []
     final_list = []
@@ -33,7 +37,8 @@ def unique_cameras(list_of_images):
             final_list.append(f"{i["camera_make"]} {i["camera_model"]}")
     return final_list
 
-#בודק החלפת מכשירים
+
+# בודק החלפת מכשירים
 def detect_camera_switches(list_of_images):
     sorted_images = sorted(
         [img for img in list_of_images if img["datetime"]],
@@ -51,12 +56,14 @@ def detect_camera_switches(list_of_images):
             })
     return switches
 
-#יוצר מילון של {שם : (מיקום_א, מיקום_ר)}
+
+# יוצר מילון של {שם : (מיקום_א, מיקום_ר)}
 def image_location(list_of_images):
-    name_with_location={img["filename"]:(float(img["latitude"]),float(img["longitude"])) for img in list_of_images}
+    name_with_location = {img["filename"]: (float(img["latitude"]), float(img["longitude"])) for img in list_of_images}
     return name_with_location
 
-#פונקציה לבדיקת חזרה למקום
+
+# פונקציה לבדיקת חזרה למקום
 def back_to_location(name_with_location):
     list_of_locations = []
     for k, v in name_with_location.items():
@@ -71,7 +78,8 @@ def back_to_location(name_with_location):
                 list_of_locations.append(tamp_loc)
     return list_of_locations
 
-#מקבל מ image_location
+
+# מקבל מ image_location
 def is_within_1km(image_loc):
     list_within_1km = []
     for k, v in image_loc.items():
@@ -110,18 +118,19 @@ def get_city_name(location_list: list):
             return "unknown"
     return city_list
 
-#פונקציה שמוציאה רשימה של פערי זמו >12 שעות
+
+# פונקציה שמוציאה רשימה של פערי זמו >12 שעות
 def time_gap(list_of_images):
     s_list = sorted(list_of_images, key=lambda x: x["datetime"])
-    gap_list=[]
-    fmt='%Y:%m:%d %H:%M:%S'
-    for i in range(len(s_list)-1):
+    gap_list = []
+    fmt = '%Y:%m:%d %H:%M:%S'
+    for i in range(len(s_list) - 1):
         threshold = timedelta(hours=12)
         t1 = datetime.strptime(s_list[i]["datetime"], fmt)
-        t2 = datetime.strptime(s_list[i+1]["datetime"], fmt)
-        gap=abs(t1-t2)
+        t2 = datetime.strptime(s_list[i + 1]["datetime"], fmt)
+        gap = abs(t1 - t2)
         if gap >= threshold:
-            gap_list.append(f"הפער בין {s_list[i]["filename"]} ל-{s_list[i+1]["filename"]} הוא {gap}")
+            gap_list.append(f"הפער בין {s_list[i]["filename"]} ל-{s_list[i + 1]["filename"]} הוא {gap}")
     return gap_list
 
 
@@ -132,36 +141,28 @@ def total_analyzer(list_of_dicts):
                   "unique_cameras": unique_cameras(list_of_dicts),
                   "date_range": date_range(list_of_dicts),
                   "insights": []}
-    #בדיקת מכשירים שונים
+    # בדיקת מכשירים שונים
     cameras_count = len(unique_cameras(list_of_dicts))
     if len(unique_cameras(list_of_dicts)) > 1:
         final_dict["insights"].append(f"נמצאו ({cameras_count}) מכשירים שונים - ייתכן שהסוכן החליף מכשירים")
 
-        #בדיקת החלפת מכשירים
+        # בדיקת החלפת מכשירים
         switch_devices = detect_camera_switches(list_of_dicts)
-        if len(switch_devices) == 1:
-            date = switch_devices[0]["datetime"]
-            from1 = switch_devices[0]["from"]
-            to = switch_devices[0]["to"]
+        tamp_list = []
+        for i in switch_devices:
+            date = i["date"]
+            from1 = i["from"]
+            to = i["to"]
             c_date = f"{date[8:10]}/{date[5:7]}"
-            msg = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
-            final_dict["insights"].append(msg)
-        else:
-            tamp_list = []
-            for i in switch_devices:
-                date = i["date"]
-                from1 = i["from"]
-                to = i["to"]
-                c_date = f"{date[8:10]}/{date[5:7]}"
-                msg1 = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
-                tamp_list.append(msg1)
-            for sen in tamp_list:
-                final_dict["insights"].append(f"{sen}")
+            msg1 = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
+            tamp_list.append(msg1)
+        for sen in tamp_list:
+            final_dict["insights"].append(f"{sen}")
 
-    #יוצר מילון של {שם : (מיקום_א, מיקום_ר)}
-    name_with_location_dict=image_location(list_of_dicts)
+    # יוצר מילון של {שם : (מיקום_א, מיקום_ר)}
+    name_with_location_dict = image_location(list_of_dicts)
 
-    #בדיקת חזרה למקום
+    # בדיקת חזרה למקום
     return_to_location = back_to_location(name_with_location_dict)
     if return_to_location:
         for item in return_to_location:
@@ -169,16 +170,18 @@ def total_analyzer(list_of_dicts):
                 msg = f"הסוכן צילם באותו מקום {cords} {count} פעמים"
                 final_dict["insights"].append(msg)
 
-    #בדיקת מיקומים קרובים
+    # בדיקת מיקומים קרובים
     location_cluster_list = is_within_1km(name_with_location_dict)
 
-    cluster_sen_list=get_city_name(location_cluster_list)
-    for sen in cluster_sen_list:
-        final_dict["insights"].append(f"{sen}")
+    cluster_sen_list = get_city_name(location_cluster_list)
+    if len(cluster_sen_list) > 0:
+        for sen in cluster_sen_list:
+            final_dict["insights"].append(f"{sen}")
 
-    #בדיקת פערי זמן
-    time_gaps=time_gap(list_of_dicts)
-    for sen in time_gaps:
-        final_dict["insights"].append(f"{sen}")
+    # בדיקת פערי זמן
+    time_gaps = time_gap(list_of_dicts)
+    if len(time_gaps) > 0:
+        for sen in time_gaps:
+            final_dict["insights"].append(f"{sen}")
 
     return final_dict
