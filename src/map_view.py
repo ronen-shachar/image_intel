@@ -31,7 +31,7 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    gps_images = [img for img in images_data if img["has_gps"]]
+    gps_images = [img for img in images_data if img.get("has_gps")]
 
     if not gps_images:
         return "<h2>No GPS data found</h2>"
