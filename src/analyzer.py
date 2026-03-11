@@ -3,6 +3,9 @@ from geopy.geocoders import Nominatim
 from datetime import datetime, timedelta
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 
+from src.extractor import extract_all
+
+
 # סך תמונות
 def total_images(list_of_images):
     return len(list_of_images)
@@ -191,3 +194,7 @@ def total_analyzer(list_of_dicts):
             final_dict["insights"].append(f"{sen}")
 
     return final_dict
+
+a = extract_all(r"C:\Users\user\Desktop\image_intel\images\ready")
+
+print(total_analyzer(a))
