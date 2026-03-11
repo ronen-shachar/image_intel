@@ -135,28 +135,21 @@ def total_analyzer(list_of_dicts):
     #בדיקת מכשירים שונים
     cameras_count = len(unique_cameras(list_of_dicts))
     if len(unique_cameras(list_of_dicts)) > 1:
-        final_dict["insights"].append(f"נמצאו ({cameras_count}) מכשירים שונים - ייתכן שהסוכן החליף מכשירים")
+        final_dict["insights"].append(f"נמצאו {cameras_count} מכשירים שונים - ייתכן שהסוכן החליף מכשירים")
 
         #בדיקת החלפת מכשירים
         switch_devices = detect_camera_switches(list_of_dicts)
-        if len(switch_devices) == 1:
-            date = switch_devices[0]["datetime"]
-            from1 = switch_devices[0]["from"]
-            to = switch_devices[0]["to"]
+
+        tamp_list = []
+        for i in switch_devices:
+            date = i["date"]
+            from1 = i["from"]
+            to = i["to"]
             c_date = f"{date[8:10]}/{date[5:7]}"
-            msg = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
-            final_dict["insights"].append(msg)
-        else:
-            tamp_list = []
-            for i in switch_devices:
-                date = i["date"]
-                from1 = i["from"]
-                to = i["to"]
-                c_date = f"{date[8:10]}/{date[5:7]}"
-                msg1 = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
-                tamp_list.append(msg1)
-            for sen in tamp_list:
-                final_dict["insights"].append(f"{sen}")
+            msg1 = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
+            tamp_list.append(msg1)
+        for sen in tamp_list:
+            final_dict["insights"].append(f"{sen}")
 
     #יוצר מילון של {שם : (מיקום_א, מיקום_ר)}
     name_with_location_dict=image_location(list_of_dicts)
