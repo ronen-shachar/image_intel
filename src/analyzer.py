@@ -1,7 +1,7 @@
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 from datetime import datetime, timedelta
-
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 
 # סך תמונות
 def total_images(list_of_images):
@@ -108,12 +108,12 @@ def get_city_name(location_list: list):
 
         # צריך שם של משתמש
         geolocator = Nominatim(user_agent="my_image_intel_app")
-        location = geolocator.reverse((lat, lon), language='he')
+        location = geolocator.reverse((lat, lon),language="en")
 
         if location and 'address' in location.raw:
             address = location.raw['address']
             city = address.get('city') or address.get('town') or address.get('village')
-            city_list.append(f"ב {city} צולמו {len(i):,} תמונות")
+            city_list.append(f"{len(i):,} pictures taken in {city}")
         else:
             return "unknown"
     return city_list
@@ -130,7 +130,7 @@ def time_gap(list_of_images):
         t2 = datetime.strptime(s_list[i + 1]["datetime"], fmt)
         gap = abs(t1 - t2)
         if gap >= threshold:
-            gap_list.append(f"הפער בין {s_list[i]["filename"]} ל-{s_list[i + 1]["filename"]} הוא {gap}")
+            gap_list.append(f"the gap between {s_list[i]["filename"]} and {s_list[i + 1]["filename"]} is {gap}")
     return gap_list
 
 
@@ -144,7 +144,7 @@ def total_analyzer(list_of_dicts):
     # בדיקת מכשירים שונים
     cameras_count = len(unique_cameras(list_of_dicts))
     if len(unique_cameras(list_of_dicts)) > 1:
-        final_dict["insights"].append(f"נמצאו ({cameras_count}) מכשירים שונים - ייתכן שהסוכן החליף מכשירים")
+        final_dict["insights"].append(f"{cameras_count} devices found - agent switched devices")
 
         # בדיקת החלפת מכשירים
         switch_devices = detect_camera_switches(list_of_dicts)
@@ -154,7 +154,7 @@ def total_analyzer(list_of_dicts):
             from1 = i["from"]
             to = i["to"]
             c_date = f"{date[8:10]}/{date[5:7]}"
-            msg1 = f"ב-{c_date} הסוכן עבר ממכשיר {from1} למכשיר {to}"
+            msg1 = f" agent switched from {from1} to {to} on {date}"
             tamp_list.append(msg1)
         for sen in tamp_list:
             final_dict["insights"].append(f"{sen}")
@@ -167,16 +167,22 @@ def total_analyzer(list_of_dicts):
     if return_to_location:
         for item in return_to_location:
             for cords, count in item.items():
-                msg = f"הסוכן צילם באותו מקום {cords} {count} פעמים"
+                msg = f"agent returned to {cords} {count} times"
                 final_dict["insights"].append(msg)
 
     # בדיקת מיקומים קרובים
     location_cluster_list = is_within_1km(name_with_location_dict)
+    #הפונקציה צריכה אינטרנט
+    try:
+        cluster_sen_list = get_city_name(location_cluster_list)
+        if len(cluster_sen_list) > 0:
+            for sen in cluster_sen_list:
+                final_dict["insights"].append(f"{sen}")
+    except (GeocoderServiceError, GeocoderTimedOut) as e:
+        print("no internet - cant fetch city group data")
 
-    cluster_sen_list = get_city_name(location_cluster_list)
-    if len(cluster_sen_list) > 0:
-        for sen in cluster_sen_list:
-            final_dict["insights"].append(f"{sen}")
+
+
 
     # בדיקת פערי זמן
     time_gaps = time_gap(list_of_dicts)
