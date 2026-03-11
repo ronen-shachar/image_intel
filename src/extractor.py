@@ -1,7 +1,6 @@
 from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
-import os
 
 """
 extractor.py - שליפת EXIF מתמונות
@@ -12,27 +11,46 @@ extractor.py - שליפת EXIF מתמונות
 """
 
 
+def dms_to_decimal(dms_tuple, ref):
+    degrees = dms_tuple[0]
+    minutes = dms_tuple[1]
+    seconds = dms_tuple[2]
+    decimal = degrees + minutes / 60 + seconds / 3600
+    if ref in [b'S', b'W', 'S', 'W']:
+        decimal = -decimal
+    return decimal
+
+
 def has_gps(data: dict):
-    pass
+    return "GPSInfo" in data
 
 
 def latitude(data: dict):
-    pass
+    try:
+        gps = data.get("GPSInfo", {})
+        return dms_to_decimal(gps[2], gps[1])
+    except (KeyError, IndexError, TypeError):
+        return None
 
 
 def longitude(data: dict):
-    pass
+    try:
+        gps = data.get("GPSInfo", {})
+        return dms_to_decimal(gps[4], gps[3])
+    except (KeyError, IndexError, TypeError):
+        return None
+
 
 def datatime(data: dict):
-    pass
+    return data.get("DateTimeOriginal")
 
 
 def camera_make(data: dict):
-    pass
+    return data.get("Make")
 
 
 def camera_model(data: dict):
-    pass
+    return data.get("Model")
 
 
 def extract_metadata(image_path):
@@ -48,7 +66,6 @@ def extract_metadata(image_path):
     """
     path = Path(image_path)
 
-    # תיקון: טיפול בתמונה בלי EXIF - בלי זה, exif.items() נופל עם AttributeError
     try:
         img = Image.open(image_path)
         exif = img._getexif()
@@ -70,9 +87,6 @@ def extract_metadata(image_path):
     for tag_id, value in exif.items():
         tag = TAGS.get(tag_id, tag_id)
         data[tag] = value
-
-    # תיקון: הוסר print(data) שהיה כאן - הדפיס את כל ה-EXIF הגולמי על כל תמונה
-
     exif_dict = {
         "filename": path.name,
         "datetime": datatime(data),
@@ -95,4 +109,5 @@ def extract_all(folder_path):
     Returns:
         list של dicts (כמו extract_metadata)
     """
-    pass
+    folder = Path(folder_path)
+    return [extract_metadata(img) for img in [file for file in folder.iterdir() if file.is_file()]]
