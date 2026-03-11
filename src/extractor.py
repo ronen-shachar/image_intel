@@ -13,7 +13,7 @@ extractor.py - שליפת EXIF מתמונות
 
 
 def has_gps(data: dict):
-    pass
+    return "GPSInfo" in data
 
 
 def latitude(data: dict):
