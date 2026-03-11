@@ -54,7 +54,9 @@ def datatime(data: dict):
 
 
 def camera_make(data: dict):
-    pass
+    if not data:
+        return None
+    return data.get('Make')
 
 
 def camera_model(data: dict):
